@@ -1,5 +1,6 @@
 const createState = require("./createState");
 const transitions = require("./transitions");
+const NFA = require("./NFAs");
 
 /**performs union of two states */
 function uniion(firstState, secondState) {
@@ -36,4 +37,34 @@ function closure(nfa) {
   nfa.end.isEnd = false;
 
   return { start, end };
+}
+
+/**function to parse a postfix expression, and store the results into stack and do operations as well.
+ * The stack contains NFAs
+ * when we scan a character, we construct a character NFA and push it to the stack
+ * when we scan an operator we pop from the stack and apply this operation on the NFA(s) and push the resulting NFA back to the stack.
+ */
+function toNFA(postfixExp) {
+  if (postfixExp === "") {
+    return fromEpsilon();
+  }
+
+  const stack = [];
+
+  for (let token of postfixExp) {
+    if (token === "*") {
+      stack.push(closure(stack.pop()));
+    } else if (token === "|") {
+      let first = stack.pop();
+      let second = stack.pop();
+      stack.push(union(first, second));
+    } else if (token === ".") {
+      let first = stack.pop();
+      let second = stack.pop();
+      stack.push(concat(first, second));
+    } else {
+      stack.push(NFA.fromSymbol(token));
+    }
+  }
+  return stack.pop();
 }
