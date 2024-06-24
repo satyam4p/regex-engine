@@ -68,3 +68,60 @@ function toNFA(postfixExp) {
   }
   return stack.pop();
 }
+
+const operatorPrecedence = {
+  "|": 0,
+  ".": 1,
+  "?": 2,
+  "*": 2,
+  "+": 2,
+};
+
+/**converting a regex into postfix notation */
+function toPostfix(regex) {
+  let output = "";
+  const operatorStack = [];
+
+  for (const token of regex) {
+    if (
+      token === "." ||
+      token === "|" ||
+      token === "*" ||
+      token === "?" ||
+      token === "+"
+    ) {
+      while (
+        operatorStack.length &&
+        peek(operatorStack) !== "(" &&
+        operatorPrecedence[peek(operatorStack)] >= operatorPrecedence[token]
+      ) {
+        output += operatorStack.pop();
+      }
+
+      operatorStack.push(token);
+    } else if (token === "(" || token === ")") {
+      if (token === "(") {
+        operatorStack.push(token);
+      } else {
+        while (peek(operatorStack) !== "(") {
+          output += operatorStack.pop();
+        }
+        operatorStack.pop();
+      }
+    } else {
+      output += token;
+    }
+  }
+
+  while (operatorStack.length) {
+    output += operatorStack.pop();
+  }
+
+  return output;
+}
+
+function peek(stack) {
+  return stack.length && stack[stack.length - 1];
+}
+
+module.exports = { toPostfix };
