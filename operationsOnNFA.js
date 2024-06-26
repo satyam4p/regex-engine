@@ -69,18 +69,54 @@ function toNFA(postfixExp) {
   return stack.pop();
 }
 
+/**converting a regex into postfix notation */
 const operatorPrecedence = {
-  "|": 0,
-  ".": 1,
-  "?": 2,
-  "*": 2,
-  "+": 2,
+  "|": 1,
+  ".": 2,
+  "*": 3,
+  "?": 3,
+  "+": 3,
 };
 
-/**converting a regex into postfix notation */
+const isRightAssociative = (operator) => {
+  return operator === "*" || operator === "?" || operator === "+";
+};
+
+const peek = (array) => array[array.length - 1];
+
+function addExplicitConcatenation(regex) {
+  let result = "";
+  const length = regex.length;
+
+  for (let i = 0; i < length; i++) {
+    result += regex[i];
+
+    if (i < length - 1) {
+      const current = regex[i];
+      const next = regex[i + 1];
+
+      if (
+        current !== "(" &&
+        current !== "|" &&
+        next !== ")" &&
+        next !== "|" &&
+        next !== "*" &&
+        next !== "?" &&
+        next !== "+"
+      ) {
+        result += ".";
+      }
+    }
+  }
+
+  return result;
+}
+
 function toPostfix(regex) {
   let output = "";
   const operatorStack = [];
+
+  regex = addExplicitConcatenation(regex);
 
   for (const token of regex) {
     if (
@@ -93,11 +129,15 @@ function toPostfix(regex) {
       while (
         operatorStack.length &&
         peek(operatorStack) !== "(" &&
-        operatorPrecedence[peek(operatorStack)] >= operatorPrecedence[token]
+        ((isRightAssociative(token) &&
+          operatorPrecedence[peek(operatorStack)] >
+            operatorPrecedence[token]) ||
+          (!isRightAssociative(token) &&
+            operatorPrecedence[peek(operatorStack)] >=
+              operatorPrecedence[token]))
       ) {
         output += operatorStack.pop();
       }
-
       operatorStack.push(token);
     } else if (token === "(" || token === ")") {
       if (token === "(") {
@@ -106,7 +146,7 @@ function toPostfix(regex) {
         while (peek(operatorStack) !== "(") {
           output += operatorStack.pop();
         }
-        operatorStack.pop();
+        operatorStack.pop(); // Remove the '(' from the stack
       }
     } else {
       output += token;
@@ -118,10 +158,6 @@ function toPostfix(regex) {
   }
 
   return output;
-}
-
-function peek(stack) {
-  return stack.length && stack[stack.length - 1];
 }
 
 module.exports = { toPostfix };
