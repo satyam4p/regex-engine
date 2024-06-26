@@ -3,7 +3,7 @@ const transitions = require("./transitions");
 const NFA = require("./NFAs");
 
 /**performs union of two states */
-function uniion(firstState, secondState) {
+function union(firstState, secondState) {
   const start = createState(false);
 
   transitions.addEpsilonTransition(start, firstState.start);
@@ -29,11 +29,11 @@ function closure(nfa) {
   const start = createState(false);
   const end = createState(true);
 
-  addEpsilonTransition(start, end);
-  addEpsilonTransition(start, nfa.start);
+  transitions.addEpsilonTransition(start, end);
+  transitions.addEpsilonTransition(start, nfa.start);
 
-  addEpsilonTransition(nfa.end, end);
-  addEpsilonTransition(nfa.end, nfa.start);
+  transitions.addEpsilonTransition(nfa.end, end);
+  transitions.addEpsilonTransition(nfa.end, nfa.start);
   nfa.end.isEnd = false;
 
   return { start, end };
@@ -160,4 +160,4 @@ function toPostfix(regex) {
   return output;
 }
 
-module.exports = { toPostfix };
+module.exports = { toPostfix, toNFA };

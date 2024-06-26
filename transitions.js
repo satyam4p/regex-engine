@@ -3,7 +3,7 @@ function addEpsilonTransition(fromState, toState) {
 }
 
 function addTransition(symbol, fromState, toState) {
-  fromState.transitions[symbol] = toState;
+  fromState.transition[symbol] = toState;
 }
 
 module.exports = { addEpsilonTransition, addTransition };
